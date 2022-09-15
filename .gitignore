@@ -1,0 +1,7 @@
+.root
+.tags
+__pycache__/
+log/
+mav.parm
+mav.tlog
+mav.tlog.raw
