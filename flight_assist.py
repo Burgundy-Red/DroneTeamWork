@@ -9,6 +9,8 @@
 # Dronekit Imports
 from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative, Command
 from pymavlink import mavutil
+from main import SERVOVALUE
+from ServoValue import ServoValue
 
 # Python Imports
 import time
@@ -817,26 +819,61 @@ def constant_speed_flight_to(vehicle, direction='w', direction_command_set=['k',
     send_ned_velocity(vehicle, velocity_x, velocity_y, velocity_z, 1)
 
 
+def set_gimbal_by_servo(vehicle, channel=6, num=1500):
+    """
+    通过控制pwm输出控制云台俯仰，
+    Args:
+        channel(int): 6通道: pitch 7通道: yaw
+        num(int): 1100 <= num <= 1900
+    Returns:
+    """
+    try:
+        msg = vehicle.message_factory.command_long_encode(
+            0, 0,
+            mavutil.mavlink.MAV_CMD_DO_SET_SERVO,
+            0,
+            channel,
+            num,
+            0,
+            0,
+            0, 0, 0)
+
+        vehicle.send_mavlink(msg)
+    except Exception as e:
+        print(e)
+
 def change_gimbal_angle(vehicle, direction='w', gimbal_command_set=['i', 'u', 'y', 'o']):
     """
-    控制云台方向 yaw pitch, 每次转5度
+    控制云台方向 yaw pitch
     Args:
         vehicle:
         direction: 方向
         gimbal_command_set: 指令集
     Returns:
     """
+    global SERVOVALUE
     if direction == 'w':
         return
 
-    pitch, roll, yaw = 0, 0, 0
-    ind = gimbal_command_set.index(direction)
-    if 0 <= ind <= 1: # 上下
-        pitch = 5 * (1 if ind % 2 == 0 else -1)
-    elif 2 <= ind <= 3: # 左右
-        yaw = 5 * (-1 if ind % 2 == 0 else 1)
+    try:
+        pitch, roll, yaw = 0, 0, 0
+        ind = gimbal_command_set.index(direction)
+        if 0 <= ind <= 1: # 上下
+            curNum = SERVOVALUE.c6
+            curNum += 50 * (-1 if ind % 2 == 0 else 1)
+            # set_gimbal_by_servo(vehicle, 6, curNum)
+            ServoValue.change_channel_value(vehicle, 6, curNum)
+            SERVOVALUE.c6 = curNum
 
-    vehicle.gimbal.rotate(pitch, roll, yaw)
+        elif 2 <= ind <= 3: # 左右
+            curNum = SERVOVALUE.c7
+            curNum += 50 * (-1 if ind % 2 == 0 else 1)
+            # set_gimbal_by_servo(vehicle, 7, curNum)
+            ServoValue.change_channel_value(vehicle, 7, curNum)
+            SERVOVALUE.c7 = curNum
+
+    except Exception as e:
+        print(e)
 
         
 
