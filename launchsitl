@@ -1,17 +1,17 @@
 #!/bin/bash
 
 kill -9 $(ps -eF | grep QG | awk -F ' ' '{print $2}')>/dev/null 2>&1
-# kill -9 $(ps -eF | grep ardu | awk -F ' ' '{print $2}')>/dev/null 2>&1
 kill -9 $(ps -eF | grep dronekit-sitl | awk -F ' ' '{print $2}')>/dev/null 2>&1
 kill -9 $(ps -eF | grep mav | awk -F ' ' '{print $2}')>/dev/null 2>&1
-kill -9 $(ps -eF | grep APM | awk -F ' ' '{print $2}')>/dev/null 2>&1
+# kill -9 $(ps -eF | grep APM | awk -F ' ' '{print $2}')>/dev/null 2>&1
+# kill -9 $(ps -eF | grep ardu | awk -F ' ' '{print $2}')>/dev/null 2>&1
 
 
 #########
 
 ## Launch a Sitl drone
 # /home/melrose/disk/DroneSITL/APM/ardupilot/build/sitl/bin/arducopter -S -I0 --home 45.6813990,126.6112194,177,180 --model "+" --speedup 1 --defaults $apm/ardupilot/Tools/autotest/default_params/copter.parm&
-dronekit-sitl copter --home 45.6813990,126.6112194,3,30 --model=quad&
+dronekit-sitl copter --home 45.7126519,126.6138878,3,30 --model=quad&
 
 sleep 5
 
@@ -21,17 +21,17 @@ sleep 5
 sleep 5
 
 ## Start MAVProxy
-screen -dm mavproxy.py --master=tcp:127.0.0.1:5760 --out=127.0.0.1:14550 --out=127.0.0.1:5762
+screen -dm mavproxy.py --master=tcp:127.0.0.1:5760 --out=127.0.0.1:14550 --out=127.0.0.1:14551
 
 ##Launch the dronekit-python script
-python "$1" --connect-string 127.0.0.1:5762
+python "$1" --connect-string 127.0.0.1:14551
 
 function finish {
 	kill -9 $(ps -eF | grep QG | awk -F ' ' '{print $2}')>/dev/null 2>&1
 	# kill -9 $(ps -eF | grep ardu | awk -F ' ' '{print $2}')>/dev/null 2>&1
 	kill -9 $(ps -eF | grep dronekit-sitl | awk -F ' ' '{print $2}')>/dev/null 2>&1
 	kill -9 $(ps -eF | grep mav | awk -F ' ' '{print $2}')>/dev/null 2>&1
-	kill -9 $(ps -eF | grep APM | awk -F ' ' '{print $2}')>/dev/null 2>&1
+	# kill -9 $(ps -eF | grep APM | awk -F ' ' '{print $2}')>/dev/null 2>&1
 }
 
 trap finish EXIT
